@@ -128,7 +128,7 @@ def serve_image(blob_name):
         print("Error serving image:", e)
         return jsonify(ok=False, error=str(e)), 500
 
-@app.get("/api/health")
+@app.get("/api/v1/health")
 def health():
     return jsonify({"status":"ok"}), 200
 
