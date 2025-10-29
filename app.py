@@ -8,7 +8,7 @@ from azure.storage.blob import BlobServiceClient
 import uuid
 ## Add required imports
 connection_string = 'DefaultEndpointsProtocol=https;AccountName=tyv8xecase7;AccountKey=Rs1ONKFXccWpphCP3aMdcIPZ6cCwYj6QZ3YuoUR7oGv8tQP/UXLFVSaiV9braoJ2gYR1Ne1nO6gi+ASt+m8lZQ==;EndpointSuffix=core.windows.net'
-CONTAINER_NAME = 'lanternfly-images-451gfoo2'
+CONTAINER_NAME = 'images-demo'
 NEW_PORT = 8080
 cc = None
 azure_connection_ok = False
@@ -100,33 +100,11 @@ def upload():
         print("Error during file upload:", e)
         return jsonify(ok=False, error=f"Internal Server Error during upload: {str(e)}"), 500
 
-
 ## Add other API end points. (/api/v1/gallery)  and (/api/v1/health)
 @app.get("/api/v1/gallery")
 def gallery():
-    if not azure_connection_ok:
-        return jsonify(ok=False, error="Azure Blob Storage connection not available"), 503
-    try:
-        blob_list = cc.list_blobs()
-        urls = [get_blob_url(blob.name) for blob in blob_list]
-        return jsonify(ok=True, images=urls), 200
-    except Exception as e:
-        print("Error retrieving gallery:", e)
-        return jsonify(ok=False, error=str(e)), 500
-
-@app.get("/gallery/<blob_name>")
-def serve_image(blob_name):
-    if not azure_connection_ok:
-        return jsonify(ok=False, error="Azure Blob Storage connection not available"), 503
-    try:
-        blob_client = cc.get_blob_client(blob_name)
-        download_stream = blob_client.download_blob()
-        image_data = download_stream.readall()
-        from flask import Response
-        return Response(image_data, mimetype='image/jpeg')
-    except Exception as e:
-        print("Error serving image:", e)
-        return jsonify(ok=False, error=str(e)), 500
+    blobs = [f"{cc.url}/{b.name}" for b in cc.list_blobs()]
+    return jsonify({"ok": True, "gallery": blobs})
 
 @app.get("/api/v1/health")
 def health():
